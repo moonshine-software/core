@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MoonShine\Core\Storage;
+namespace MoonShine\Core\Contracts;
 
 interface StorageContract
 {
