@@ -4,22 +4,23 @@ declare(strict_types=1);
 
 namespace MoonShine\Core;
 
-use Closure;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use MoonShine\Contracts\Core\DependencyInjection\RequestContract;
 use MoonShine\Core\Traits\InteractsWithRequest;
 use Psr\Http\Message\ServerRequestInterface;
 
-final class Request
+class AbstractRequest implements RequestContract
 {
     use InteractsWithRequest;
 
     public function __construct(
-        protected ServerRequestInterface $request,
-        protected ?Closure $session = null,
-        protected ?Closure $file = null,
-        protected ?Closure $old = null,
-    ) {
+        protected readonly ServerRequestInterface $request,
+    ) {}
 
+    public function getRequest(): ServerRequestInterface
+    {
+        return $this->request;
     }
 
     public function get(string $key, mixed $default = null): mixed
@@ -33,21 +34,22 @@ final class Request
 
     public function getSession(string $key, mixed $default = null): mixed
     {
-        return value($this->session, $key, $default);
+        return $default;
     }
 
-    public function getFile(string $key): mixed
+    public function getFormErrors(?string $bag = null): array
     {
-        if(is_null($this->file)) {
-            return $this->get($key);
-        }
-
-        return value($this->file, $key);
+        return [];
     }
 
     public function getOld(string $key, mixed $default = null): mixed
     {
-        return value($this->old, $key, $default);
+        return $default;
+    }
+
+    public function getFile(string $key): mixed
+    {
+        return Arr::get($this->getRequest()->getUploadedFiles(), $key);
     }
 
     public function has(string $key): bool
@@ -59,9 +61,9 @@ final class Request
     {
         return collect(
             array_merge(
-                $this->request->getQueryParams(),
-                $this->request->getParsedBody(),
-                $this->request->getUploadedFiles(),
+                $this->getRequest()->getQueryParams(),
+                $this->getRequest()->getParsedBody(),
+                $this->getRequest()->getUploadedFiles(),
             )
         );
     }

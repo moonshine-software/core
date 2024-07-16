@@ -5,29 +5,25 @@ declare(strict_types=1);
 namespace MoonShine\Core;
 
 use Illuminate\Support\Traits\Conditionable;
-use MoonShine\Core\Contracts\MoonShineEndpoints;
-use MoonShine\Core\Contracts\PageContract;
-use MoonShine\Core\Contracts\ResourceContract;
+use MoonShine\Contracts\Core\DependencyInjection\EndpointsContract;
+use MoonShine\Contracts\Core\DependencyInjection\RouterContract;
+use MoonShine\Contracts\Core\PageContract;
+use MoonShine\Contracts\Core\ResourceContract;
 use Stringable;
 
-abstract class MoonShineRouter implements Stringable
+abstract class AbstractRouter implements RouterContract, Stringable
 {
     use Conditionable;
 
     public const ROUTE_PREFIX = 'moonshine';
 
-    public function __construct(
-        private string $name = '',
-        private array $params = [],
-    ) {
-    }
+    private string $name = '';
+
+    private array $params = [];
 
     abstract public function to(string $name = '', array $params = []): string;
 
-    public function getEndpoints(): MoonShineEndpoints
-    {
-        return moonshine()->getContainer(MoonShineEndpoints::class, null, $this);
-    }
+    abstract public function getEndpoints(): EndpointsContract;
 
     public function withName(string $name): self
     {
